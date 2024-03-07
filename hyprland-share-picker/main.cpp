@@ -141,6 +141,57 @@ int main(int argc, char* argv[]) {
 
     const auto WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT = WINDOWS_SCROLL_AREA_CONTENTS->layout();
 
+    const auto WINDOWS_LINE_EDIT =
+        (QLineEdit*)TAB1->findChild<QWidget*>("windows")->findChild<QLineEdit*>("searchLineEdit");
+
+    WINDOWS_LINE_EDIT->setFocus();
+    //WINDOWS_LINE_EDIT->setText("this is some text");
+    QObject::connect(WINDOWS_LINE_EDIT, &QLineEdit::textChanged, [=]() {
+        QLayoutItem *item;
+        while ((item = WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->takeAt(0)) != nullptr)
+        {
+            // If the item is a widget, remove it from the layout and delete it
+            if (QWidget *widget = item->widget()) {
+                widget->hide(); // Optionally hide the widget
+                delete widget;
+            }
+            // Delete the layout item
+            delete item;
+        }
+
+        auto searchText = WINDOWS_LINE_EDIT->text();
+        //std::cout << searchText.toStdString() << std::endl;
+        for (auto& window : WINDOWLIST) {
+
+            if(window.clazz.find(searchText.toStdString()) == std::string::npos && window.name.find(searchText.toStdString()) == std::string::npos)
+                continue;
+
+            QString      text = QString::fromStdString(window.clazz + ": " + window.name);
+
+            ElidedButton* button = new ElidedButton(text);
+            button->setMinimumSize(0, BUTTON_HEIGHT);
+            WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->addWidget(button);
+
+            mainPickerPtr->windowIDs[button] = window.id;
+
+            QObject::connect(button, &QPushButton::clicked, [=]() {
+                std::cout << "[SELECTION]";
+                std::cout << (ALLOWTOKENBUTTON->isChecked() ? "r" : "");
+                std::cout << "/";
+
+                std::cout << "window:" << mainPickerPtr->windowIDs[button] << "\n";
+
+                settings->setValue("width", mainPickerPtr->width());
+                settings->setValue("height", mainPickerPtr->height());
+                settings->sync();
+
+                pickerPtr->quit();
+                return 0;
+            });
+        }
+
+    });
+
     // loop over them
     int windowIterator = 0;
     for (auto& window : WINDOWLIST) {
@@ -178,7 +229,7 @@ int main(int argc, char* argv[]) {
     const auto   REGION_LAYOUT = REGION_OBJECT->layout();
 
     QString      text = "Select region...";
-    
+
     ElidedButton* button = new ElidedButton(text);
     button->setMaximumSize(400, BUTTON_HEIGHT);
     REGION_LAYOUT->addWidget(button);

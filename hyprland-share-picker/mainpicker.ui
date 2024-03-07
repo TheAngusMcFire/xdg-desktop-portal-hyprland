@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
-    <height>290</height>
+    <width>700</width>
+    <height>800</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -221,6 +221,16 @@
             </widget>
            </widget>
           </item>
+		  <item row="1" column="0">
+			<widget class="QLineEdit" name="searchLineEdit">
+			 <property name="focusPolicy">
+			  <enum>Qt::StrongFocus</enum>
+			 </property>
+			 <property name="placeholderText">
+			  <string>Enter some text...</string>
+			 </property>
+			</widget>
+		   </item>
          </layout>
         </widget>
         <widget class="QWidget" name="region">
@@ -259,7 +269,7 @@
          <enum>Qt::ClickFocus</enum>
         </property>
         <property name="toolTip">
-         <string>By selecting this, the application will be given a restore token that it can use to skip prompting you next time. 
+         <string>By selecting this, the application will be given a restore token that it can use to skip prompting you next time.
 Only select if you trust the application.</string>
         </property>
         <property name="layoutDirection">
