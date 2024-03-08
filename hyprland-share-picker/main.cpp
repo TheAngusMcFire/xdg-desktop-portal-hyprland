@@ -206,7 +206,13 @@ int main(int argc, char* argv[]) {
         //std::cout << searchText.toStdString() << std::endl;
         for (auto& window : WINDOWLIST) {
 
-            if(window.clazz.find(searchText.toStdString()) == std::string::npos && window.name.find(searchText.toStdString()) == std::string::npos)
+            auto clsearch = std::string (window.clazz);
+            std::transform(clsearch.begin(), clsearch.end(), clsearch.begin(),
+                           [](unsigned char c){ return std::tolower(c); });
+            auto namesearch = std::string (window.name);
+            std::transform(namesearch.begin(), namesearch.end(), namesearch.begin(),
+                           [](unsigned char c){ return std::tolower(c); });
+            if(clsearch.find(searchText.toStdString()) == std::string::npos && namesearch.find(searchText.toStdString()) == std::string::npos)
                 continue;
 
             QString      text = QString::fromStdString(window.clazz + ": " + window.name);
