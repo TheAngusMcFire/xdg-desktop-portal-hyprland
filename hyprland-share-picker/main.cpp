@@ -95,15 +95,20 @@ int main(int argc, char* argv[]) {
 
     const auto TAB1 = (QWidget*)TABWIDGET->children()[0];
 
-    const auto SCREENS_SCROLL_AREA_CONTENTS =
+    /*const auto SCREENS_SCROLL_AREA_CONTENTS =
         (QWidget*)TAB1->findChild<QWidget*>("screens")->findChild<QScrollArea*>("scrollArea")->findChild<QWidget*>("scrollAreaWidgetContents");
 
     const auto SCREENS_SCROLL_AREA_CONTENTS_LAYOUT = SCREENS_SCROLL_AREA_CONTENTS->layout();
+*/
 
+    const auto WINDOWS_SCROLL_AREA_CONTENTS =
+        (QWidget*)TAB1->findChild<QWidget*>("windows")->findChild<QScrollArea*>("scrollArea_2")->findChild<QWidget*>("scrollAreaWidgetContents_2");
+
+    const auto WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT = WINDOWS_SCROLL_AREA_CONTENTS->layout();
     // add all screens
     const auto    SCREENS = picker.screens();
 
-    constexpr int BUTTON_HEIGHT = 41;
+    constexpr int BUTTON_HEIGHT = 30;
 
     for (int i = 0; i < SCREENS.size(); ++i) {
         const auto   GEOMETRY = SCREENS[i]->geometry();
@@ -114,7 +119,7 @@ int main(int argc, char* argv[]) {
         QString outputName = SCREENS[i]->name();
         ElidedButton* button = new ElidedButton(text);
         button->setMinimumSize(0, BUTTON_HEIGHT);
-        SCREENS_SCROLL_AREA_CONTENTS_LAYOUT->addWidget(button);
+        WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->addWidget(button);
 
         QObject::connect(button, &QPushButton::clicked, [=]() {
             std::cout << "[SELECTION]";
@@ -133,17 +138,19 @@ int main(int argc, char* argv[]) {
     }
 
     QSpacerItem * SCREENS_SPACER = new QSpacerItem(0,10000, QSizePolicy::Expanding, QSizePolicy::Expanding);
-    SCREENS_SCROLL_AREA_CONTENTS_LAYOUT->addItem(SCREENS_SPACER);
+    WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->addItem(SCREENS_SPACER);
 
     // windows
-    const auto WINDOWS_SCROLL_AREA_CONTENTS =
+   /* const auto WINDOWS_SCROLL_AREA_CONTENTS =
         (QWidget*)TAB1->findChild<QWidget*>("windows")->findChild<QScrollArea*>("scrollArea_2")->findChild<QWidget*>("scrollAreaWidgetContents_2");
 
-    const auto WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT = WINDOWS_SCROLL_AREA_CONTENTS->layout();
+    const auto WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT = WINDOWS_SCROLL_AREA_CONTENTS->layout();*/
 
     const auto WINDOWS_LINE_EDIT =
         (QLineEdit*)TAB1->findChild<QWidget*>("windows")->findChild<QLineEdit*>("searchLineEdit");
 
+    ((QWidget*)TAB1->findChild<QWidget*>("windows"))->setFocusPolicy(Qt::StrongFocus);
+    ((QWidget*)TAB1->findChild<QWidget*>("windows"))->setFocus();
     WINDOWS_LINE_EDIT->setFocus();
     //WINDOWS_LINE_EDIT->setText("this is some text");
     QObject::connect(WINDOWS_LINE_EDIT, &QLineEdit::textChanged, [=]() {
@@ -160,6 +167,42 @@ int main(int argc, char* argv[]) {
         }
 
         auto searchText = WINDOWS_LINE_EDIT->text();
+        for (int i = 0; i < SCREENS.size(); ++i) {
+
+
+            const auto   GEOMETRY = SCREENS[i]->geometry();
+
+            QString      text = QString::fromStdString(std::string("Screen " + std::to_string(i) + " at " + std::to_string(GEOMETRY.x()) + ", " + std::to_string(GEOMETRY.y()) + " (" +
+                                                                          std::to_string(GEOMETRY.width()) + "x" + std::to_string(GEOMETRY.height()) + ") (") +
+                                                              SCREENS[i]->name().toStdString() + ")");
+            auto stext = text.toStdString();
+            std::transform(stext.begin(), stext.end(), stext.begin(),
+                           [](unsigned char c){ return std::tolower(c); });
+
+            if(stext.find(searchText.toStdString()) == std::string::npos)
+                continue;
+
+            QString outputName = SCREENS[i]->name();
+            ElidedButton* button = new ElidedButton(text);
+            button->setMinimumSize(0, BUTTON_HEIGHT);
+            WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->addWidget(button);
+
+            QObject::connect(button, &QPushButton::clicked, [=]() {
+                std::cout << "[SELECTION]";
+                std::cout << (ALLOWTOKENBUTTON->isChecked() ? "r" : "");
+                std::cout << "/";
+
+                std::cout << "screen:" << outputName.toStdString() << "\n";
+
+                settings->setValue("width", mainPickerPtr->width());
+                settings->setValue("height", mainPickerPtr->height());
+                settings->sync();
+
+                pickerPtr->quit();
+                return 0;
+            });
+        }
+
         //std::cout << searchText.toStdString() << std::endl;
         for (auto& window : WINDOWLIST) {
 
@@ -225,13 +268,13 @@ int main(int argc, char* argv[]) {
     WINDOWS_SCROLL_AREA_CONTENTS_LAYOUT->addItem(WINDOWS_SPACER);
 
     // lastly, region
-    const auto   REGION_OBJECT = (QWidget*)TAB1->findChild<QWidget*>("region");
+    const auto   REGION_OBJECT = (QWidget*)TAB1->findChild<QWidget*>("windows");
     const auto   REGION_LAYOUT = REGION_OBJECT->layout();
 
     QString      text = "Select region...";
 
     ElidedButton* button = new ElidedButton(text);
-    button->setMaximumSize(400, BUTTON_HEIGHT);
+    button->setMaximumSize(4000, BUTTON_HEIGHT);
     REGION_LAYOUT->addWidget(button);
 
 
